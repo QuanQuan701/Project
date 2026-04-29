@@ -5,7 +5,7 @@ import os
 import re
 import serial.tools.list_ports
 from main import FpgaProtocol, ISP_BATCH_CONFIG
-
+#test to merge
 
 APP_VERSION = "V1.2.0"
 
