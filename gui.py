@@ -551,9 +551,12 @@ class FpgaGui(tk.Tk):
     def _build_ui(self):
         padding = {"padx": 10, "pady": 6}
 
-        # 主界面可滚动容器：小窗口下可滚动到结果区和进度条
-        self.root_canvas = tk.Canvas(self, highlightthickness=0)
-        self.root_scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.root_canvas.yview)
+        # 顶部容器放置主界面可滚动内容（这样底部输出区可以固定）
+        top_container = ttk.Frame(self)
+        top_container.pack(fill="both", expand=True)
+
+        self.root_canvas = tk.Canvas(top_container, highlightthickness=0)
+        self.root_scrollbar = ttk.Scrollbar(top_container, orient="vertical", command=self.root_canvas.yview)
         self.root_canvas.configure(yscrollcommand=self.root_scrollbar.set)
         self.root_canvas.pack(side="left", fill="both", expand=True)
         self.root_scrollbar.pack(side="right", fill="y")
@@ -617,14 +620,17 @@ class FpgaGui(tk.Tk):
         self._build_mode_tab(self.tab_mode)
         self.notebook.bind("<<NotebookTabChanged>>", self._on_notebook_tab_changed)
 
-        # 公共结果区
-        res_frame = ttk.LabelFrame(self.main_pane, text="结果")
-
-        self.result_text = tk.Text(res_frame, height=9, wrap="word")
-        self.result_text.pack(fill="both", expand=True, padx=10, pady=8)
-
         self.main_pane.add(self.notebook, weight=4)
-        self.main_pane.add(res_frame, weight=1)
+
+        # 将结果区固定放在窗口底部（不随上方滚动区域滚动）
+        self.bottom_frame = ttk.LabelFrame(self, text="结果")
+        self.bottom_frame.pack(side="bottom", fill="x")
+
+        self.result_text = tk.Text(self.bottom_frame, height=9, wrap="word")
+        self.result_scroll = ttk.Scrollbar(self.bottom_frame, orient="vertical", command=self.result_text.yview)
+        self.result_text.configure(yscrollcommand=self.result_scroll.set)
+        self.result_text.pack(side="left", fill="both", expand=True, padx=10, pady=8)
+        self.result_scroll.pack(side="right", fill="y", padx=(0, 8), pady=8)
 
     def _on_root_content_configure(self, _event=None):
         if hasattr(self, "root_canvas"):

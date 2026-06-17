@@ -172,60 +172,6 @@ void SetFpgaRegister(uint32_t addr, uint32_t data)
     // 直接使用 32-bit 绝对地址访问
     REG32(addr) = data;
 }
-
-// /**
-//  * @brief ISP 批量配置寄存器写入（按提供列表顺序）
-//  * Bits 均为 31:0，直接写 32-bit 值
-//  */
-// void ISP_BatchConfig(void)
-// {
-//     REG32(0x4001B400u) = 0x00000003u; // nlm_l
-//     REG32(0x4001D400u) = 0x00000003u; // nlm_r
-//     REG32(0x4001B148u) = 0x00000000u; // c_rec_k12_L
-//     REG32(0x4001B14Cu) = 0x003EF3EEu; // c_rec_fxy0_L
-//     REG32(0x4001B124u) = 0x000003E9u; // c_rec_h00_L
-//     REG32(0x4001B128u) = 0x003FFFE7u; // c_rec_h01_L
-//     REG32(0x4001B12Cu) = 0x0031E7A3u; // c_rec_h02_L
-//     REG32(0x4001B130u) = 0x00000019u; // c_rec_h10_L
-//     REG32(0x4001B134u) = 0x000003E9u; // c_rec_h11_L
-//     REG32(0x4001B138u) = 0x0037A701u; // c_rec_h12_L
-//     REG32(0x4001B13Cu) = 0x003FFFFCu; // c_rec_h20_L
-//     REG32(0x4001B140u) = 0x003FFFFCu; // c_rec_h21_L
-//     REG32(0x4001B144u) = 0x0010199Eu; // c_rec_h22_L
-//     REG32(0x4001B120u) = 0x80107720u; // c_rec_bypass_control_cxy_L
-//     REG32(0x4001D148u) = 0x00000000u; // c_rec_k12_R
-//     REG32(0x4001D14Cu) = 0x003F13F1u; // c_rec_fxy0_R
-//     REG32(0x4001D124u) = 0x000003E9u; // c_rec_h00_R
-//     REG32(0x4001D128u) = 0x003FFFDCu; // c_rec_h01_R
-//     REG32(0x4001D12Cu) = 0x00320153u; // c_rec_h02_R
-//     REG32(0x4001D130u) = 0x00000025u; // c_rec_h10_R
-//     REG32(0x4001D134u) = 0x000003E9u; // c_rec_h11_R
-//     REG32(0x4001D138u) = 0x00375C81u; // c_rec_h12_R
-//     REG32(0x4001D13Cu) = 0x003FFFFCu; // c_rec_h20_R
-//     REG32(0x4001D140u) = 0x00000004u; // c_rec_h21_R
-//     REG32(0x4001D144u) = 0x001008B1u; // c_rec_h22_R
-//     REG32(0x4001D120u) = 0x80107F5Cu; // c_rec_bypass_control_cxy_R
-//     REG32(0x4001B010u) = 0x00000500u; // c_acq_h_size_L
-//     REG32(0x4001B014u) = 0x000002D0u; // c_acq_v_size_L
-//     REG32(0x4001B17Cu) = 0x00000500u; // c_out_hsize_L
-//     REG32(0x4001B180u) = 0x000002D0u; // c_out_vsize_L
-//     REG32(0x4001B000u) = 0x0000E316u; // c_ctrl_L
-//     REG32(0x4001D010u) = 0x00000500u; // c_acq_h_size_R
-//     REG32(0x4001D014u) = 0x000002D0u; // c_acq_v_size_R
-//     REG32(0x4001D07Cu) = 0x00000500u; // c_out_hsize_R
-//     REG32(0x4001D180u) = 0x000002D0u; // c_out_vsize_R
-//     REG32(0x4001D000u) = 0x0000E316u; // c_ctrl_R
-//     REG32(0x4001E26Cu) = 0x00A00018u; // c_stereo_post_sel
-//     REG32(0x4001E268u) = 0x04809080u; // c_stereo_range_p1p2
-//     REG32(0x4001E270u) = 0x43FB7E14u; // c_stereo_camera
-//     REG32(0x4001E274u) = 0x00000000u; // c_stereo_crop_size
-//     REG32(0x4001E278u) = 0x00000021u; // c_stereo_disp_clip
-//     REG32(0x4001E27Cu) = 0x0000002Eu; // c_stereo_shift_sel
-//     REG32(0x4001E280u) = 0x3050580Au; // nr3d_control
-//     REG32(0x4001E260u) = 0x80168500u; // c_stereo_res
-//     REG32(0x4001E264u) = 0x00168500u; // c_stereo_res_new
-// }
-
 /************************** Protocol State Machine ***************************/
 
 /**

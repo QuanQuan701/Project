@@ -8,7 +8,7 @@ CMD_VERSION = 0x56  # 'V'
 
 class FpgaProtocol:
     response_timeout = 5  # 默认超时时间，单位秒
-    def __init__(self, port, baudrate=115200, timeout=1):
+    def __init__(self, port, baudrate=14400, timeout=1):
         self.ser = serial.Serial(port, baudrate, timeout=timeout)
         self.header = 0x02
         self.tail = 0x03
@@ -44,6 +44,7 @@ class FpgaProtocol:
         # 等待回传
         response = self.read_frame(self.response_timeout)
         if response:
+            print(f"回传原始数据: {response.hex(' ').upper()}")
             return self.unpack_frame(response)
         return "错误：读取超时或无响应"
 
@@ -228,17 +229,17 @@ def apply_isp_batch_config(port, baudrate=115200, timeout=1, response_timeout=5,
 
 
 if __name__ == "__main__":
-    # 实例化协议类
-    fpga = FpgaProtocol('COM3', 115200, 1)
+    # # 实例化协议类
+    fpga = FpgaProtocol('COM3', 14400, 1)
     
-    # # 执行一个“写”操作：向地址 0x100 写入 255
-    # res = fpga.send_command(cmd=0x57, addr=0x0100, data=0xFF)
+    # print(f"执行一个“写”操作：向地址 0x4001B400 写入值 0x03")
+    # res = fpga.send_command(cmd=0x57, addr=0x4001B400, data=0x03)
     # print(f"解析结果: {res}")
-    # # 执行一个“读”操作：从地址 0x100 读取数据
-    # res = fpga.send_command(cmd=0x52, addr=0x0100)
+    # # 执行一个“读”操作：从地址 0x4001B400 读取数据
+    # print(f"执行一个“读”操作：从地址 0x4001B400 读取数据")
+    # res = fpga.send_command(cmd=0x52, addr=0x4001B400)
     # print(f"解析结果: {res}")
-    # res = send_fpga_command(port="COM3", cmd=0x57, addr=0x4001B400, data=0x00000003)
-    # print("写入结果:", res)
-
-    # res = send_fpga_command(port="COM3", cmd=0x52, addr=0x4001B400, data=0)
-    # print("读取结果:", res)
+    # # 执行一个“版本查询”操作
+    # print(f"执行一个“版本查询”操作")
+    # res = fpga.send_command(cmd=CMD_VERSION, addr=0, data=0)
+    # print(f"解析结果: {res}")
