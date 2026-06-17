@@ -8,6 +8,7 @@ CMD_VERSION = 0x56  # 'V'
 
 class FpgaProtocol:
     response_timeout = 5  # 默认超时时间，单位秒
+
     def __init__(self, port, baudrate=14400, timeout=1):
         self.ser = serial.Serial(port, baudrate, timeout=timeout)
         self.header = 0x02
@@ -19,29 +20,18 @@ class FpgaProtocol:
 
     def pack_frame(self, cmd, addr, data):
         """将指令打包成 12 字节的二进制帧"""
-        # 使用 struct 打包: 
-        # B = unsigned char (1 byte)
-        # I = unsigned int (4 bytes)
-        # > 代表大端字节序 (Big-endian)
-        # 格式: 帧头(B) + 命令(B) + 地址(I) + 数据(I)
         main_part = struct.pack('>BBII', self.header, cmd, addr, data)
-        
-        # 计算校验和
         cs = self._calculate_checksum(main_part)
-        
-        # 拼接校验位和帧尾
         full_frame = main_part + struct.pack('>BB', cs, self.tail)
         return full_frame
 
     def send_command(self, cmd, addr, data=0):
         """发送指令并等待回传"""
-        # 发送前清空接收缓冲区，确保读到的是本次指令的回传
         self.ser.reset_input_buffer()
         frame = self.pack_frame(cmd, addr, data)
         print(f"发送原始数据: {frame.hex(' ').upper()}")
         self.ser.write(frame)
-        
-        # 等待回传
+
         response = self.read_frame(self.response_timeout)
         if response:
             print(f"回传原始数据: {response.hex(' ').upper()}")
@@ -84,52 +74,43 @@ class FpgaProtocol:
         """解析硬件回传的帧"""
         if len(frame) < 12:
             return "错误: 长度不足"
-        
-        # 解包
+
         header, cmd, addr, data, cs, tail = struct.unpack('>BBIIBB', frame)
-        
-        # 验证帧头和校验位
         expected_cs = self._calculate_checksum(frame[:10])
         if header != self.header or tail != self.tail:
             return "错误: 帧头或帧尾不匹配"
         if cs != expected_cs:
             return "错误: 校验失败"
-            
+
         return {"cmd": cmd, "addr": hex(addr), "data": data}
 
     def read_frame(self, timeout=1):
         """等待帧头出现后，再继续读取剩余字节。"""
         frame_len = 12
-        remaining_len = frame_len - 1  # 去掉帧头后的剩余长度
+        remaining_len = frame_len - 1
 
-        #保留原超时设置
         original_timeout = self.ser.timeout
-
-        # 计算整体超时时间，避免无限等待
         end_time = time.time() + timeout if timeout is not None else None
         self.ser.timeout = timeout
         try:
             while True:
                 if end_time is not None and time.time() > end_time:
-                    return None #"错误: 读取超时"
+                    return None
 
                 first = self.ser.read(1)
                 if not first:
-                    # 读超时且未拿到帧头，继续尝试直到总超时
                     continue
 
                 if first[0] != self.header:
-                    # 不是帧头，继续寻找
                     continue
 
-                # 已找到帧头，读取剩余字节
                 if end_time is not None:
                     remaining_timeout = max(0, end_time - time.time())
                     self.ser.timeout = remaining_timeout
 
                 rest = self.ser.read(remaining_len)
                 if len(rest) < remaining_len:
-                    return None #"错误: 长度不足"
+                    return None
                 return first + rest
         finally:
             self.ser.timeout = original_timeout
@@ -147,22 +128,12 @@ class FpgaProtocol:
 
 
 def send_fpga_command(port, cmd, addr, data=0, baudrate=115200, timeout=1, response_timeout=5):
-    """发送指令并返回解析结果。
-
-    :param port: 串口号，例如 "COM3"
-    :param cmd: 指令 (0x52/0x57 等)
-    :param addr: 地址 (32-bit)
-    :param data: 数据 (32-bit)，读指令可忽略
-    :param baudrate: 波特率，默认 115200
-    :param timeout: 串口超时 (秒)
-    :param response_timeout: 整体响应超时 (秒)
-    """
+    """发送指令并返回解析结果。"""
     with FpgaProtocol(port, baudrate, timeout) as fpga:
         fpga.response_timeout = response_timeout
         return fpga.send_command(cmd=cmd, addr=addr, data=data)
 
 
-# ISP 批量配置表（地址, 寄存器名, 值）
 ISP_BATCH_CONFIG = [
     (0x4001B400, "nlm_l", 0x00000003),
     (0x4001D400, "nlm_r", 0x00000003),
@@ -221,25 +192,5 @@ def apply_isp_batch_config(port, baudrate=115200, timeout=1, response_timeout=5,
             result = fpga.send_command(cmd=0x57, addr=addr, data=value)
             results.append((addr, name, value, result))
             if verbose:
-                print(
-                    f"WRITE {name} @0x{addr:08X} = 0x{value:08X} -> {result}"
-                )
+                print(f"WRITE {name} @0x{addr:08X} = 0x{value:08X} -> {result}")
     return results
-
-
-
-if __name__ == "__main__":
-    # # 实例化协议类
-    fpga = FpgaProtocol('COM3', 14400, 1)
-    
-    # print(f"执行一个“写”操作：向地址 0x4001B400 写入值 0x03")
-    # res = fpga.send_command(cmd=0x57, addr=0x4001B400, data=0x03)
-    # print(f"解析结果: {res}")
-    # # 执行一个“读”操作：从地址 0x4001B400 读取数据
-    # print(f"执行一个“读”操作：从地址 0x4001B400 读取数据")
-    # res = fpga.send_command(cmd=0x52, addr=0x4001B400)
-    # print(f"解析结果: {res}")
-    # # 执行一个“版本查询”操作
-    # print(f"执行一个“版本查询”操作")
-    # res = fpga.send_command(cmd=CMD_VERSION, addr=0, data=0)
-    # print(f"解析结果: {res}")
