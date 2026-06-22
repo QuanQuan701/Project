@@ -275,7 +275,7 @@ class FpgaGui(tk.Tk):
         bit_frame = ttk.LabelFrame(parent, text="位值（4bit/8bit 分组，点击 0/1 立即写回）")
         bit_frame.pack(fill="none", anchor="w", padx=12, pady=(0, 10))
 
-        self.bit_canvas = tk.Canvas(bit_frame, width=820, height=170, highlightthickness=0)
+        self.bit_canvas = tk.Canvas(bit_frame, width=820, height=120, highlightthickness=0)
         bit_scroll = ttk.Scrollbar(bit_frame, orient="vertical", command=self.bit_canvas.yview)
         self.bit_inner = ttk.Frame(self.bit_canvas)
         self.bit_canvas.configure(yscrollcommand=bit_scroll.set)
